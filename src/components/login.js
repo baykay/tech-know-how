@@ -3,7 +3,7 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import {Link} from 'react-router-dom';
+import {Link, useHistory} from 'react-router-dom';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
@@ -11,11 +11,33 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Copyright from './copyrights';
 import useStyles from './styes';
+import axios from 'axios';
+import isAunthenticated from './isAunthenticated';
 
 
-export default function LoginView(props) {
+export default function LoginView() {
+  const history = useHistory()
+  React.useEffect(() => {
+    if(isAunthenticated()){
+      history.push("/dashboard")
+    }
+  }, [])
+
   const classes = useStyles();
-  console.log(props)
+  const [form, setForm] = React.useState({email: "", firstname: "", lastname: "", phone: "", password: ""})
+  const handleChange = (e) => setForm({...form, [e.target.name]: e.target.value})
+
+  const handleSubmit = (e) => {
+      e.preventDefault()
+      axios.post("http://66.228.56.214:3000/auth/login", {...form})
+      .then(res => {
+        localStorage.setItem('tech_know_how_user', JSON.stringify(res['data']['data']['user']))
+        localStorage.setItem('tech_know_how_token', JSON.stringify(res['data']['data']['token']))
+          setForm({email: "", password: ""})
+          history.push("/dashboard")
+        })
+      .catch(err => console.log(err))
+  }
 
   return (
     <Grid container component="main" className={classes.root}>
@@ -29,12 +51,14 @@ export default function LoginView(props) {
           <Typography component="h1" variant="h5">
             Sign in to your account
           </Typography>
-          <form className={classes.form} noValidate>
-            <TextField
+          <form className={classes.form} noValidate  onSubmit={handleSubmit}>
+          <TextField
               variant="outlined"
               margin="normal"
               required
               fullWidth
+              value={form.email}
+              onChange={handleChange}
               id="email"
               label="Email Address"
               name="email"
@@ -47,6 +71,8 @@ export default function LoginView(props) {
               required
               fullWidth
               name="password"
+              value={form.password}
+              onChange={handleChange}
               label="Password"
               type="password"
               id="password"
@@ -63,7 +89,7 @@ export default function LoginView(props) {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
+                <Link to="#" variant="body2">
                   Forgot password?
                 </Link>
               </Grid>
@@ -72,7 +98,7 @@ export default function LoginView(props) {
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>
-            </Grid>
+            </Grid> 
             <Box mt={5}>
               <Copyright />
             </Box>

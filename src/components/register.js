@@ -27,6 +27,7 @@ const  RegsterView = () => {
       axios.post("http://66.228.56.214:3000/auth/register", {...form})
       .then(res => {
           console.log(res['data']['data'])
+          setForm({email: "", firstname: "", lastname: "", phone: "", password: ""})
           history.push("/")
         })
       .catch(err => console.log(err))
